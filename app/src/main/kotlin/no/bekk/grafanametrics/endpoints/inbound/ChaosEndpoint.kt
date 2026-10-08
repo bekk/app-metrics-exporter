@@ -1,7 +1,7 @@
 package no.bekk.grafanametrics.endpoints.inbound
 
-import no.bekk.grafanametrics.states.Chaos
-import no.bekk.grafanametrics.states.ChaosState
+import no.bekk.grafanametrics.stability.ChaosState
+import no.bekk.grafanametrics.stability.Chaos
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -17,7 +17,7 @@ import java.time.Instant
  */
 @RestController
 @RequestMapping("/api/chaos")
-class ChaosEndpoint(private val state: ChaosState) {
+class ChaosEndpoint(private val state: Chaos) {
 
     data class ChaosRequest(
         val errorRate: Double = 0.0,
@@ -26,7 +26,7 @@ class ChaosEndpoint(private val state: ChaosState) {
     )
 
     @GetMapping
-    fun get(): ResponseEntity<Chaos> = state.active()?.let { ResponseEntity.ok(it) } ?: ResponseEntity.noContent().build()
+    fun get(): ResponseEntity<ChaosState> = state.active()?.let { ResponseEntity.ok(it) } ?: ResponseEntity.noContent().build()
 
     @PostMapping
     fun start(@RequestBody request: ChaosRequest): ResponseEntity<Any> {
@@ -35,7 +35,7 @@ class ChaosEndpoint(private val state: ChaosState) {
             request.extraLatencyMs < 0 -> return badRequest("extraLatencyMs kan ikke være negativ")
             request.minutes <= 0 -> return badRequest("minutes må være større enn 0")
         }
-        val chaos = Chaos(
+        val chaos = ChaosState(
             errorRate = request.errorRate,
             extraLatencyMs = request.extraLatencyMs,
             until = Instant.now() + Duration.ofMinutes(request.minutes),

@@ -1,4 +1,4 @@
-package no.bekk.grafanametrics.states
+package no.bekk.grafanametrics.stability
 
 import io.micrometer.core.instrument.Gauge
 import io.micrometer.core.instrument.MeterRegistry
@@ -8,17 +8,17 @@ import java.time.Instant
 /**
  * En simulert hendelse som gir alle endepunktene ekstra feil og/eller latency fram til `until`.
  */
-data class Chaos(
+data class ChaosState(
     val errorRate: Double,
     val extraLatencyMs: Long,
     val until: Instant,
 )
 
 @Component
-class ChaosState(registry: MeterRegistry) {
+class Chaos(registry: MeterRegistry) {
 
     @Volatile
-    private var current: Chaos? = null
+    private var current: ChaosState? = null
 
     init {
         // Én enkel serie som gjør det lett å markere chaos-perioder i dashboards.
@@ -27,8 +27,8 @@ class ChaosState(registry: MeterRegistry) {
             .register(registry)
     }
 
-    fun start(chaos: Chaos) {
-        current = chaos
+    fun start(chaosState: ChaosState) {
+        current = chaosState
     }
 
     fun stop() {
@@ -36,5 +36,5 @@ class ChaosState(registry: MeterRegistry) {
     }
 
     /** Chaos som pågår nå, eller null hvis ingen er startet eller den har gått ut på tid. */
-    fun active(): Chaos? = current?.takeIf { Instant.now() < it.until }
+    fun active(): ChaosState? = current?.takeIf { Instant.now() < it.until }
 }

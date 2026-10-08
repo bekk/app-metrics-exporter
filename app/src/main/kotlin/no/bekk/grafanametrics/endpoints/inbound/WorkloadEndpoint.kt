@@ -1,7 +1,7 @@
 package no.bekk.grafanametrics.endpoints.inbound
 
 import no.bekk.grafanametrics.shared.WorkloadPaths
-import no.bekk.grafanametrics.states.ChaosState
+import no.bekk.grafanametrics.stability.Chaos
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -14,7 +14,7 @@ import java.util.concurrent.ThreadLocalRandom
  */
 @RestController
 @RequestMapping(WorkloadPaths.BASE)
-class WorkloadEndpoint(private val chaos: ChaosState) {
+class WorkloadEndpoint(private val chaos: Chaos) {
 
     @GetMapping(WorkloadPaths.SHORT_DELAY)
     fun shortDelay() = simulateRequest(typicalLatencyMs = 250, errorRate = 0.01)
