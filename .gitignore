@@ -1,0 +1,44 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!app/src/main/**/target/
+!app/src/test/**/target/
+.kotlin
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!app/src/main/**/build/
+!app/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### IntelliJ HTTP-klient ###
+.http/http-client.private.env.json
+
+### Legitimasjon til Secretene i k8s/
+# Leses av secretGenerator. Eksemplene ved siden av er unntatt med vilje.
+k8s/**/secrets/*.env
+!k8s/**/secrets/*.env.example

@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: app1-grafana-metrics
+  threads:
+    virtual:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      # Bare bøttene SLO-ene trenger, i stedet for fullt histogram, for å holde
+      # antall aktive serier nede i Grafana Cloud.
+      slo:
+        "[http.server.requests]": 300ms,500ms,1s,2s
+
+traffic:
+  # OFF, LOW eller HIGH. Kan endres mens appen kjører via PUT /api/traffic.
+  level: LOW
