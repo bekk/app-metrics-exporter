@@ -18,7 +18,7 @@ import java.util.concurrent.ThreadLocalRandom
 enum class TrafficLevel(val requestsPerSecond: Int) {
     OFF(0),
     LOW(2),
-    HIGH(20),
+    HIGH(5),
 }
 
 /**
