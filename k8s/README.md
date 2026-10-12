@@ -46,11 +46,35 @@ Et nytt navn gir nye tidsserier i Grafana Cloud. SLO-spørringer som filtrerer p
 
 ## Deploy
 
-Repoet har ennå ingen Dockerfile eller workflow. `image: replaced-at-deploy` i
-`deployment.yaml` må byttes ut med et image før deploy.
+Det finnes ingen workflow ennå, så deployen gjøres for hånd. Klyngen er
+`spire-grafana-slo` i `gcp-fleks-grafanaslo`, og imaget legges i Artifact
+Registry-repoet `spire-grafana-slo`, som deles med de andre appene.
 
-Se hva som blir deployet:
+Bygg og push imaget. GKE-nodene er linux/amd64, så på en Apple Silicon-Mac må
+plattformen oppgis, ellers krasjer podden med «exec format error».
 
 ```bash
-kubectl kustomize k8s
+IMAGE=europe-north1-docker.pkg.dev/gcp-fleks-grafanaslo/spire-grafana-slo/demo-metrics-exporter:$(git rev-parse --short HEAD)
 ```
+
+```bash
+docker build --platform linux/amd64 -t "$IMAGE" . && docker push "$IMAGE"
+```
+
+`image: replaced-at-deploy` i `deployment.yaml` byttes ut med `kustomize edit` i en
+kopi av `k8s/`, så filen i repoet ikke endres:
+
+```bash
+cp -R k8s /tmp/k8s-deploy && (cd /tmp/k8s-deploy && kustomize edit set image replaced-at-deploy="$IMAGE")
+```
+
+```bash
+kubectl --context spire-grafana-slo apply -k /tmp/k8s-deploy
+```
+
+```bash
+kubectl --context spire-grafana-slo -n ns-demo-metrics-exporter rollout status deploy/deployment-demo-metrics-exporter
+```
+
+Metrikkene sendes av den felles Alloy-en, som må være deployet fra
+`fleks-grafanaslo-alloy`.

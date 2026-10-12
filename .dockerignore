@@ -1,0 +1,12 @@
+**/target/
+**/build/
+.git/
+.github/
+.idea/
+.kotlin/
+k8s/
+*.md
+catalog-info.yaml
+Dockerfile
+.dockerignore
+.gitignore
