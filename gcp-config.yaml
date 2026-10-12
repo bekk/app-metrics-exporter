@@ -1,0 +1,37 @@
+# Innstillinger for deploy til GCP.
+#
+# Rene konfigurasjonsverdier. Leses av .github/workflows/deploy-main.yml og
+# .github/setup-wif.sh med yq, slik at navn ikke hardkodes der. Se .github/README.md.
+
+# Navnet på imaget i Artifact Registry. Samme som komponenten i Backstage.
+app: app-metrics-exporter
+
+gcp:
+  project_id: gcp-fleks-grafanaslo
+  region: europe-north1
+  # Artifact Registry-repoet ble laget for spire-grafana-slo og deles med de
+  # andre appene, så repo-navnet er ikke det samme som app-navnet.
+  repo: spire-grafana-slo
+  # GKE Autopilot-klyngen deles også.
+  cluster: spire-grafana-slo
+  latest_tag: latest
+
+# GKE-nodene er linux/amd64. Bygges imaget uten dette på en Apple Silicon-Mac,
+# krasjer podden med «exec format error».
+build:
+  platform: linux/amd64
+  dockerfile: Dockerfile
+  context: .
+
+kubernetes:
+  # Kustomize-mappa som deployes.
+  dir: k8s
+  # Må stemme med «namespace» i k8s/kustomization.yaml og navnet i
+  # k8s/deployment.yaml.
+  namespace: ns-app-metrics-exporter
+  deployment: deployment-app-metrics-exporter
+  # Plassholderen i k8s/deployment.yaml som byttes ut med gjeldende image.
+  image_placeholder: replaced-at-deploy
+
+timeouts:
+  rollout: 5m

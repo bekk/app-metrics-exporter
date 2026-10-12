@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deployment-demo-metrics-exporter
+  name: deployment-app-metrics-exporter
   labels:
-    app.kubernetes.io/name: demo-metrics-exporter
+    app.kubernetes.io/name: app-metrics-exporter
 spec:
   # Én replika. Trafikknivået og chaos ligger i minnet i hver pod, så med flere
   # replikaer ville PUT /api/traffic og POST /api/chaos bare truffet én av dem.
@@ -15,11 +15,11 @@ spec:
       maxSurge: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: demo-metrics-exporter
+      app.kubernetes.io/name: app-metrics-exporter
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: demo-metrics-exporter
+        app.kubernetes.io/name: app-metrics-exporter
       # Den felles Alloy-en skraper bare pods som ber om det. Se README.md.
       annotations:
         prometheus.io/scrape: "true"
@@ -32,7 +32,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - name: demo-metrics-exporter
+        - name: app-metrics-exporter
           # Erstattes ved deploy.
           image: replaced-at-deploy
           ports:

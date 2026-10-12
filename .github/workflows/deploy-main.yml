@@ -1,0 +1,161 @@
+# Deploy til GKE. Kjører når noe lander på main. Se .github/README.md.
+name: Deploy til GKE
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - catalog-info.yaml
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image-tag som skal deployes på nytt. Tom = bygg fra HEAD.'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+# Én deploy om gangen. cancel-in-progress må være false: å avbryte midt i
+# «kubectl apply» ville etterlatt klyngen halvveis deployet.
+concurrency:
+  group: deploy-gcp-app-metrics-exporter
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: app/pom.xml
+
+      - name: Tester
+        working-directory: app
+        run: mvn -B verify
+
+      # Fanger feil i manifestene før de når klyngen. Bruker kustomize-en som
+      # er bygget inn i kubectl, samme som deployen.
+      - uses: azure/setup-kubectl@v5
+        with:
+          version: v1.36.1
+
+      - name: Bygg manifestene
+        run: kubectl kustomize "$(yq -r '.kubernetes.dir' gcp-config.yaml)" > /dev/null
+
+  deploy:
+    name: deploy
+    # Alle deploys må ha grønne tester i forkant.
+    needs: test
+    runs-on: ubuntu-latest
+    environment: gcp-app-metrics-exporter
+    permissions:
+      contents: read
+      # Kreves av google-github-actions/auth. Står bare her, så testjobben ikke
+      # kan hente et GCP-token.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+
+      # Verdiene leses fra gcp-config.yaml, ikke hardkodet her. Da kan de ikke
+      # komme i utakt med det som deployes for hånd.
+      - name: Les konfigurasjon
+        id: cfg
+        run: |
+          set -euo pipefail
+          app=$(yq -r '.app' gcp-config.yaml)
+          region=$(yq -r '.gcp.region' gcp-config.yaml)
+          ar_repo=$(yq -r '.gcp.repo' gcp-config.yaml)
+          tag='${{ inputs.tag }}'
+          [ -n "$tag" ] || tag="${GITHUB_SHA:0:7}"
+          image="${region}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${ar_repo}/${app}"
+          {
+            echo "region=$region"
+            echo "cluster=$(yq -r '.gcp.cluster' gcp-config.yaml)"
+            echo "platform=$(yq -r '.build.platform' gcp-config.yaml)"
+            echo "dockerfile=$(yq -r '.build.dockerfile' gcp-config.yaml)"
+            echo "context=$(yq -r '.build.context' gcp-config.yaml)"
+            echo "dir=$(yq -r '.kubernetes.dir' gcp-config.yaml)"
+            echo "namespace=$(yq -r '.kubernetes.namespace' gcp-config.yaml)"
+            echo "deployment=$(yq -r '.kubernetes.deployment' gcp-config.yaml)"
+            echo "placeholder=$(yq -r '.kubernetes.image_placeholder' gcp-config.yaml)"
+            echo "rollout=$(yq -r '.timeouts.rollout' gcp-config.yaml)"
+            echo "image=${image}:${tag}"
+            echo "image_latest=${image}:$(yq -r '.gcp.latest_tag' gcp-config.yaml)"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      # GKE-kubeconfig bruker exec-plugin, så den må være installert.
+      - uses: google-github-actions/setup-gcloud@v3
+        with:
+          install_components: gke-gcloud-auth-plugin
+
+      # Pinner kubectl-versjonen så den ikke endrer seg med runner-imaget.
+      - uses: azure/setup-kubectl@v5
+        with:
+          version: v1.36.1
+
+      - run: gcloud auth configure-docker '${{ steps.cfg.outputs.region }}-docker.pkg.dev' --quiet
+
+      - uses: docker/setup-buildx-action@v4
+        if: inputs.tag == ''
+
+      - name: Bygg og publiser imaget
+        if: inputs.tag == ''
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ steps.cfg.outputs.context }}
+          file: ${{ steps.cfg.outputs.dockerfile }}
+          platforms: ${{ steps.cfg.outputs.platform }}
+          push: true
+          # Uten dette publiseres et ekstra attestation-manifest, som dukker
+          # opp som «unknown/unknown»-plattform i Artifact Registry.
+          provenance: false
+          tags: |
+            ${{ steps.cfg.outputs.image }}
+            ${{ steps.cfg.outputs.image_latest }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Hent kubectl-kontekst
+        run: |
+          gcloud container clusters get-credentials '${{ steps.cfg.outputs.cluster }}' \
+            --region '${{ steps.cfg.outputs.region }}' \
+            --project '${{ vars.GCP_PROJECT_ID }}'
+
+      # Plassholderen byttes ut i det rendrede resultatet, så filene i repoet
+      # ikke endres. Rendret YAML skrives ikke til loggen.
+      - name: Deploy
+        run: |
+          set -euo pipefail
+          kubectl kustomize '${{ steps.cfg.outputs.dir }}' \
+            | sed "s|${{ steps.cfg.outputs.placeholder }}|${{ steps.cfg.outputs.image }}|g" \
+            | kubectl apply -f -
+          kubectl -n '${{ steps.cfg.outputs.namespace }}' rollout status \
+            'deployment/${{ steps.cfg.outputs.deployment }}' \
+            --timeout='${{ steps.cfg.outputs.rollout }}'
+
+      - name: Oppsummering
+        if: always()
+        run: |
+          {
+            echo "### Deploy til GKE"
+            echo
+            echo "| | |"
+            echo "| --- | --- |"
+            echo "| Image | \`${{ steps.cfg.outputs.image }}\` |"
+            echo "| Namespace | \`${{ steps.cfg.outputs.namespace }}\` |"
+            echo "| Commit | ${GITHUB_SHA} |"
+          } >> "$GITHUB_STEP_SUMMARY"

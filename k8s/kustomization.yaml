@@ -1,7 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: ns-demo-metrics-exporter
+# Namespacet lages ikke her, men én gang av .github/setup-wif.sh. Deploy-kontoen
+# har bare rettigheter inne i namespacet og kan ikke opprette eller endre det.
+namespace: ns-app-metrics-exporter
 
 # Labelene som knytter podene til komponenten i Backstage, og som den felles
 # Alloy-en kopierer over på metrikkene som «service» og «team». Verdiene må
@@ -13,12 +15,11 @@ namespace: ns-demo-metrics-exporter
 # etter første deploy.
 labels:
   - pairs:
-      backstage.io/kubernetes-id: demo-metrics-exporter
+      backstage.io/kubernetes-id: app-metrics-exporter
       team: fleks-grafanaslo
     includeSelectors: false
     includeTemplates: true
 
 resources:
-  - namespace.yaml
   - networkpolicy.yaml
   - deployment.yaml

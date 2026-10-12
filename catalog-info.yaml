@@ -1,11 +1,11 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: demo-metrics-exporter
+  name: app-metrics-exporter
   annotations:
     # Pod-labelen Backstage finner podene med. Settes i k8s/kustomization.yaml,
     # sammen med «team», som må stemme med spec.owner.
-    backstage.io/kubernetes-id: demo-metrics-exporter
+    backstage.io/kubernetes-id: app-metrics-exporter
   tags:
     - internal
 spec:

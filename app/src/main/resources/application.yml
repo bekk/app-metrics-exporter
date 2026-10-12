@@ -1,6 +1,6 @@
 spring:
   application:
-    name: app1-grafana-metrics
+    name: app-metrics-exporter
   threads:
     virtual:
       enabled: true

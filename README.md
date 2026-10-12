@@ -1,4 +1,4 @@
-# app1-grafana-metrics
+# app-metrics-exporter
 
 Spring Boot-app som produserer metrikker til Prometheus-datakilden i Grafana Cloud, for å
 teste SLO-pluginen.

@@ -29,7 +29,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: demo-metrics-exporter
+      app.kubernetes.io/name: app-metrics-exporter
   policyTypes:
     - Ingress
   ingress:

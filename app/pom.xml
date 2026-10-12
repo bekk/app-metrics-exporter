@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>no.bekk</groupId>
-    <artifactId>app1-grafana-metrics</artifactId>
+    <artifactId>app-metrics-exporter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>app1-grafana-metrics</name>
-    <description>app1-grafana-metrics</description>
+    <name>app-metrics-exporter</name>
+    <description>app-metrics-exporter</description>
     <properties>
         <java.version>21</java.version>
         <kotlin.version>2.3.21</kotlin.version>
