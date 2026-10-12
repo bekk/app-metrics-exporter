@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: ns-demo-metrics-exporter
+
+# Labelene som knytter podene til komponenten i Backstage, og som den felles
+# Alloy-en kopierer over på metrikkene som «service» og «team». Verdiene må
+# stemme med «metadata.name» og «spec.owner» i ../catalog-info.yaml.
+#
+# includeTemplates gjør at labelene også havner på pod-malen, ikke bare på
+# Deployment-objektet. Det er podene Alloy og Backstage ser på.
+# includeSelectors er av, fordi en selector på en Deployment ikke kan endres
+# etter første deploy.
+labels:
+  - pairs:
+      backstage.io/kubernetes-id: demo-metrics-exporter
+      team: fleks-grafanaslo
+    includeSelectors: false
+    includeTemplates: true
+
+resources:
+  - namespace.yaml
+  - networkpolicy.yaml
+  - deployment.yaml

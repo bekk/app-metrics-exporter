@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-demo-metrics-exporter
+  labels:
+    app.kubernetes.io/name: demo-metrics-exporter
+spec:
+  # Én replika. Trafikknivået og chaos ligger i minnet i hver pod, så med flere
+  # replikaer ville PUT /api/traffic og POST /api/chaos bare truffet én av dem.
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: demo-metrics-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: demo-metrics-exporter
+      # Den felles Alloy-en skraper bare pods som ber om det. Se README.md.
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /actuator/prometheus
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: demo-metrics-exporter
+          # Erstattes ved deploy.
+          image: replaced-at-deploy
+          ports:
+            - name: http
+              containerPort: 8080
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 250m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          # Tomcat trenger en skrivbar /tmp når rotfilsystemet er skrivebeskyttet.
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          # Spring Boot slår på /actuator/health/{liveness,readiness} av seg selv
+          # når den oppdager at den kjører i Kubernetes.
+          startupProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: tmp
+          emptyDir: {}
