@@ -12,4 +12,13 @@ spec:
   type: service
   lifecycle: production
   owner: fleks-grafanaslo
-  system: metrics-exporter
+  system: grafana-slo
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: grafana-slo
+  title: Grafana SLO
+  description: Testoppsett for SLO-pluginen i Grafana Cloud
+spec:
+  owner: fleks-grafanaslo
