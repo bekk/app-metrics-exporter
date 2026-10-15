@@ -1,10 +1,10 @@
 # app-metrics-exporter
 
-Spring Boot-app som produserer metrikker til Prometheus-datakilden i Grafana Cloud, for å
-teste SLO-pluginen.
+Spring Boot-app med simulerte endepunkter, for å teste SLO-pluginen i Grafana Cloud.
 
-Appen kaller sine egne endepunkter kontinuerlig over HTTP. Da lager Spring de ekte
-`http_server_requests_seconds_*`-metrikkene, og SLO-ene kan bygges på dem.
+Appen kaller sine egne endepunkter kontinuerlig over HTTP. Beyla i klyngen måler
+requestene og lager `http_server_request_duration_seconds_*`, som SLO-ene bygges på.
+Se [`fleks-grafanaslo-alloy`](https://github.com/bekk/fleks-grafanaslo-alloy).
 
 ## Kjøre lokalt
 
@@ -12,7 +12,8 @@ Appen kaller sine egne endepunkter kontinuerlig over HTTP. Da lager Spring de ek
 cd app && mvn spring-boot:run
 ```
 
-Metrikkene ligger på <http://localhost:8080/actuator/prometheus>.
+Appens egne Spring-metrikker ligger på <http://localhost:8080/actuator/prometheus>.
+De sendes ikke til Grafana Cloud.
 
 ## Simulerte endepunkter
 
@@ -24,7 +25,7 @@ Hvert endepunkt har fast typisk latency og feilrate:
 | `/api/workload/delay/long`  | 750 ms         | 5 %      |
 
 Latency varierer mellom halv og halvannen gang typisk verdi. 5 % av requestene tar i
-tillegg fire ganger så lang tid. Feil returneres som HTTP 500 (`outcome="SERVER_ERROR"`).
+tillegg fire ganger så lang tid. Feil returneres som HTTP 500.
 
 ## Tilstand som kan endres mens appen kjører
 
@@ -68,26 +69,26 @@ curl localhost:8080/api/chaos
 curl -X DELETE localhost:8080/api/chaos
 ```
 
-Metrikken `chaos_active` er `1` mens en hendelse pågår, og kan brukes til annotasjoner i
-dashboards.
+Metrikken `chaos_active` er `1` mens en hendelse pågår. Den er en Spring-metrikk, og
+sendes ikke til Grafana Cloud.
 
 ## SLI-spørringer
 
-Histogrammet har bare bøttene `0.3`, `0.5`, `1` og `2` sekunder, for å holde antall aktive
-serier nede.
+`http_route` er ruten Beyla henter ut av koden. Bucket-grensene står i
+`fleks-grafanaslo-alloy`: `0.05`, `0.1`, `0.2`, `0.3`, `0.5`, `1`, `2` og `5` sekunder.
 
 Tilgjengelighet:
 
 ```promql
-sum(rate(http_server_requests_seconds_count{uri="/api/workload/delay/short", outcome!="SERVER_ERROR"}[$__rate_interval]))
+sum(rate(http_server_request_duration_seconds_count{service="app-metrics-exporter", http_route="/api/workload/delay/short", http_response_status_code!~"5.."}[$__rate_interval]))
 /
-sum(rate(http_server_requests_seconds_count{uri="/api/workload/delay/short"}[$__rate_interval]))
+sum(rate(http_server_request_duration_seconds_count{service="app-metrics-exporter", http_route="/api/workload/delay/short"}[$__rate_interval]))
 ```
 
 Latency (andel under 300 ms):
 
 ```promql
-sum(rate(http_server_requests_seconds_bucket{uri="/api/workload/delay/short", le="0.3"}[$__rate_interval]))
+sum(rate(http_server_request_duration_seconds_bucket{service="app-metrics-exporter", http_route="/api/workload/delay/short", le="0.3"}[$__rate_interval]))
 /
-sum(rate(http_server_requests_seconds_count{uri="/api/workload/delay/short"}[$__rate_interval]))
+sum(rate(http_server_request_duration_seconds_count{service="app-metrics-exporter", http_route="/api/workload/delay/short"}[$__rate_interval]))
 ```

@@ -7,19 +7,15 @@ mappa.
 |----------------------|-------------------------------------------------------|
 | `kustomization.yaml` | Namespace og labels for Backstage og metrikker        |
 | `deployment.yaml`    | Appen                                                 |
-| `networkpolicy.yaml` | Default deny, med unntak for den felles Alloy-en      |
+| `networkpolicy.yaml` | Default deny for innkommende trafikk                  |
 
 ## Metrikker
 
-Appen har ingen egen Alloy. Metrikkene skrapes av den felles Alloy-en i repoet
-`fleks-grafanaslo-alloy`, som sender dem til Grafana Cloud. For å bli skrapet må
-podene ha tre ting, som alle står her:
-
-1. Annotasjonen `prometheus.io/scrape: "true"` og `prometheus.io/path` på pod-malen
-   i `deployment.yaml`.
-2. Labelene `backstage.io/kubernetes-id` og `team`, satt i `kustomization.yaml`.
-   Pods uten dem blir ikke skrapet.
-3. En NetworkPolicy som slipper Alloy fra `ns-alloy` inn på port 8080.
+Appen har ingen egen Alloy. Beyla og Alloy fra repoet `fleks-grafanaslo-alloy` måler
+HTTP-trafikken til podene og sender RED-metrikkene til Grafana Cloud. Podene trenger
+bare labelene `backstage.io/kubernetes-id` og `team`, satt i `kustomization.yaml`.
+Pods uten dem blir ikke målt. Ingen annotasjoner eller NetworkPolicy trengs, fordi
+ingenting kobler seg til appen.
 
 Labelene blir til `service` og `team` på metrikkene:
 
@@ -38,7 +34,6 @@ Navnet er ikke endelig. Det står disse stedene:
 - `metadata.name` og `backstage.io/kubernetes-id` i `../catalog-info.yaml`
 - `namespace` og `backstage.io/kubernetes-id` i `kustomization.yaml`
 - Navnet, labelene og containernavnet i `deployment.yaml`
-- `podSelector` i `networkpolicy.yaml`
 - `app`, `kubernetes.namespace` og `kubernetes.deployment` i `../gcp-config.yaml`
 
 Et nytt namespace må lages med `../.github/setup-wif.sh`, som også gir deploy-kontoen
@@ -77,5 +72,5 @@ kubectl kustomize k8s | sed "s|replaced-at-deploy|$IMAGE|g" | kubectl --context 
 kubectl --context spire-grafana-slo -n ns-app-metrics-exporter rollout status deploy/deployment-app-metrics-exporter
 ```
 
-Metrikkene sendes av den felles Alloy-en, som må være deployet fra
+Metrikkene kommer fra Beyla og Alloy, som må være deployet fra
 `fleks-grafanaslo-alloy`.

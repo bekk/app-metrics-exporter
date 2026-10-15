@@ -22,8 +22,8 @@ enum class TrafficLevel(val requestsPerSecond: Int) {
 }
 
 /**
- * Kaller appens egne endepunkter over HTTP, slik at Spring lager de ekte
- * `http_server_requests_seconds`-metrikkene som SLO-ene bygger på.
+ * Kaller appens egne endepunkter over HTTP, slik at Beyla i klyngen måler ekte
+ * requests som SLO-ene bygger på.
  */
 @Component
 class TrafficGenerator(

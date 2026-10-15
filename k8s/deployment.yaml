@@ -20,10 +20,6 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: app-metrics-exporter
-      # Den felles Alloy-en skraper bare pods som ber om det. Se README.md.
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/path: /actuator/prometheus
     spec:
       securityContext:
         runAsNonRoot: true

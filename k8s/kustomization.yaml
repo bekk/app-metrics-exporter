@@ -5,14 +5,9 @@ kind: Kustomization
 # har bare rettigheter inne i namespacet og kan ikke opprette eller endre det.
 namespace: ns-app-metrics-exporter
 
-# Labelene som knytter podene til komponenten i Backstage, og som den felles
-# Alloy-en kopierer over på metrikkene som «service» og «team». Verdiene må
-# stemme med «metadata.name» og «spec.owner» i ../catalog-info.yaml.
-#
-# includeTemplates gjør at labelene også havner på pod-malen, ikke bare på
-# Deployment-objektet. Det er podene Alloy og Backstage ser på.
-# includeSelectors er av, fordi en selector på en Deployment ikke kan endres
-# etter første deploy.
+# Knytter podene til Backstage, og Beyla måler bare pods med begge. Blir «service» og
+# «team» på metrikkene, og må stemme med ../catalog-info.yaml. includeSelectors er av,
+# fordi en selector på en Deployment ikke kan endres etter første deploy.
 labels:
   - pairs:
       backstage.io/kubernetes-id: app-metrics-exporter

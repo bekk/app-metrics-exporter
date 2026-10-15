@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom
 
 /**
  * Endepunkter som later som de gjør arbeid, med ulik typisk latency og feilrate.
- * Hvert endepunkt har sin egen path, slik at `uri`-taggen på `http_server_requests_seconds` skiller dem
+ * Hvert endepunkt har sin egen path, slik at `http_route` fra Beyla skiller dem
  */
 @RestController
 @RequestMapping(WorkloadPaths.BASE)
