@@ -18,3 +18,4 @@ labels:
 resources:
   - networkpolicy.yaml
   - deployment.yaml
+  - service.yaml

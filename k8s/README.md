@@ -7,15 +7,27 @@ mappa.
 |----------------------|-------------------------------------------------------|
 | `kustomization.yaml` | Namespace og labels for Backstage og metrikker        |
 | `deployment.yaml`    | Appen                                                 |
-| `networkpolicy.yaml` | Default deny for innkommende trafikk                  |
+| `service.yaml`       | Servicen oppetidsproben kaller                        |
+| `networkpolicy.yaml` | Default deny, med unntak for proben fra Alloy         |
 
 ## Metrikker
 
 Appen har ingen egen Alloy. Beyla og Alloy fra repoet `fleks-grafanaslo-alloy` måler
 HTTP-trafikken til podene og sender RED-metrikkene til Grafana Cloud. Podene trenger
 bare labelene `backstage.io/kubernetes-id` og `team`, satt i `kustomization.yaml`.
-Pods uten dem blir ikke målt. Ingen annotasjoner eller NetworkPolicy trengs, fordi
-ingenting kobler seg til appen.
+Pods uten dem blir ikke målt.
+
+## Oppetid
+
+Alloy kaller helsesjekken på `service-app-metrics-exporter` hvert 30. sekund, og
+sender `probe_success` (1 eller 0) til Grafana Cloud. Det krever:
+
+1. Annotasjonen `prometheus.io/probe: "true"` og en port som heter `http` i
+   `service.yaml`. Stien er `/actuator/health/readiness`, satt med
+   `prometheus.io/probe-path`.
+2. Labelene på Servicen, som `labels` i `kustomization.yaml` setter på alle ressursene.
+3. NetworkPolicy-en `netpol-allow-alloy-probe`, som slipper Alloy fra `ns-alloy` inn
+   på port 8080.
 
 Labelene blir til `service` og `team` på metrikkene:
 
@@ -34,6 +46,8 @@ Navnet er ikke endelig. Det står disse stedene:
 - `metadata.name` og `backstage.io/kubernetes-id` i `../catalog-info.yaml`
 - `namespace` og `backstage.io/kubernetes-id` i `kustomization.yaml`
 - Navnet, labelene og containernavnet i `deployment.yaml`
+- Navnet og selectoren i `service.yaml`
+- `podSelector` i `networkpolicy.yaml`
 - `app`, `kubernetes.namespace` og `kubernetes.deployment` i `../gcp-config.yaml`
 
 Et nytt namespace må lages med `../.github/setup-wif.sh`, som også gir deploy-kontoen

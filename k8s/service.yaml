@@ -1,0 +1,16 @@
+# Bare for oppetidsproben i den felles Alloy-en, som kaller helsesjekken hvert 30. sekund.
+# Bytt til /healthz når den finnes. Den er standardstien til proben.
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-app-metrics-exporter
+  annotations:
+    prometheus.io/probe: "true"
+    prometheus.io/probe-path: /actuator/health/readiness
+spec:
+  selector:
+    app.kubernetes.io/name: app-metrics-exporter
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

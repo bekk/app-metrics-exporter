@@ -92,3 +92,9 @@ sum(rate(http_server_request_duration_seconds_bucket{service="app-metrics-export
 /
 sum(rate(http_server_request_duration_seconds_count{service="app-metrics-exporter", http_route="/api/workload/delay/short"}[$__rate_interval]))
 ```
+
+Oppetid for hele appen, fra proben i Alloy (se [k8s/README.md](k8s/README.md#oppetid)):
+
+```promql
+avg_over_time(probe_success{service="app-metrics-exporter"}[$__rate_interval])
+```

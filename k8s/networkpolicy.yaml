@@ -11,3 +11,27 @@ spec:
   podSelector: {}
   policyTypes:
     - Ingress
+---
+# Unntaket: oppetidsproben i den felles Alloy-en går via Servicen til pod-porten.
+# Portnummer, fordi navngitte porter ikke støttes like godt av alle CNI-er.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: netpol-allow-alloy-probe
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: app-metrics-exporter
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ns-alloy
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: alloy
+      ports:
+        - protocol: TCP
+          port: 8080
