@@ -1,5 +1,4 @@
-# Bare for oppetidsproben i den felles Alloy-en, som kaller helsesjekken hvert 30. sekund.
-# Bytt til /healthz når den finnes. Den er standardstien til proben.
+# Bare for oppetidsproben i den felles Alloy-en, som kaller readiness hvert 30. sekund.
 apiVersion: v1
 kind: Service
 metadata:
