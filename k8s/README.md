@@ -41,7 +41,7 @@ den samme verdien knytter komponenten til både podene og metrikkene.
 
 ## Bytte navn på appen
 
-Navnet er ikke endelig. Det står disse stedene:
+Navnet på appen står disse stedene:
 
 - `metadata.name` og `backstage.io/kubernetes-id` i `../catalog-info.yaml`
 - `namespace` og `backstage.io/kubernetes-id` i `kustomization.yaml`

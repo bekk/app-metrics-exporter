@@ -67,8 +67,8 @@ Denne kontoen har det ikke:
 Prisen er at namespacet ikke kan deployes av workflowen. Det lages av `setup-wif.sh`
 og står ikke i `k8s/`.
 
-Registry-repoet `spire-grafana-slo` deles fortsatt. Artifact Registry har ikke
-tilgangsstyring per image, så kontoen kan skrive til alle imagene der.
+Registry-repoet `spire-grafana-slo` deles med de andre appene. Artifact Registry har
+ikke tilgangsstyring per image, så kontoen kan skrive til alle imagene der.
 
 ## Variabler
 
