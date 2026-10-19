@@ -1,7 +1,7 @@
 package no.bekk.grafanametrics.endpoints.inbound
 
 import no.bekk.grafanametrics.shared.WorkloadPaths
-import no.bekk.grafanametrics.stability.Chaos
+import no.bekk.grafanametrics.services.Chaos
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping

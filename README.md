@@ -38,7 +38,7 @@ selv, og om en simulert hendelse (chaos) pågår.
 |--------|-----------------------------|
 | `OFF`  | 0                           |
 | `LOW`  | 2                           |
-| `HIGH` | 20                          |
+| `HIGH` | 5                           |
 
 Nivået ved oppstart settes med `traffic.level` i `application.yml` (standard `LOW`) eller
 miljøvariabelen `TRAFFIC_LEVEL`. Hver replika sender sin egen trafikk.

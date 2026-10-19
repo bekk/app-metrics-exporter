@@ -1,7 +1,7 @@
 package no.bekk.grafanametrics.endpoints.inbound
 
-import no.bekk.grafanametrics.stability.ChaosState
-import no.bekk.grafanametrics.stability.Chaos
+import no.bekk.grafanametrics.services.ChaosState
+import no.bekk.grafanametrics.services.Chaos
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -35,12 +35,9 @@ class ChaosEndpoint(private val state: Chaos) {
             request.extraLatencyMs < 0 -> return badRequest("extraLatencyMs kan ikke være negativ")
             request.minutes <= 0 -> return badRequest("minutes må være større enn 0")
         }
-        val chaos = ChaosState(
-            errorRate = request.errorRate,
-            extraLatencyMs = request.extraLatencyMs,
-            until = Instant.now() + Duration.ofMinutes(request.minutes),
-        )
-        state.start(chaos)
+
+        val chaos = state.startChaos(request = request)
+
         return ResponseEntity.ok(chaos)
     }
 

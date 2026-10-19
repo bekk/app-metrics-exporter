@@ -1,8 +1,10 @@
-package no.bekk.grafanametrics.stability
+package no.bekk.grafanametrics.services
 
 import io.micrometer.core.instrument.Gauge
 import io.micrometer.core.instrument.MeterRegistry
+import no.bekk.grafanametrics.endpoints.inbound.ChaosEndpoint
 import org.springframework.stereotype.Component
+import java.time.Duration
 import java.time.Instant
 
 /**
@@ -27,9 +29,12 @@ class Chaos(registry: MeterRegistry) {
             .register(registry)
     }
 
-    fun start(chaosState: ChaosState) {
-        current = chaosState
-    }
+    fun startChaos(request: ChaosEndpoint.ChaosRequest) =
+        ChaosState(
+            errorRate = request.errorRate,
+            extraLatencyMs = request.extraLatencyMs,
+            until = Instant.now() + Duration.ofMinutes(request.minutes),
+        ).let { current = it; it }
 
     fun stop() {
         current = null
