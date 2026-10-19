@@ -37,7 +37,7 @@ selv, og om en simulert hendelse (chaos) pågår.
 | Nivå   | Requests per sekund, totalt |
 |--------|-----------------------------|
 | `OFF`  | 0                           |
-| `LOW`  | 2                           |
+| `LOW`  | 1                           |
 | `HIGH` | 5                           |
 
 Nivået ved oppstart settes med `traffic.level` i `application.yml` (standard `LOW`) eller

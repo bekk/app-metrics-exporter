@@ -1,7 +1,7 @@
 package no.bekk.grafanametrics.endpoints.inbound
 
-import no.bekk.grafanametrics.generators.TrafficGenerator
-import no.bekk.grafanametrics.generators.TrafficLevel
+import no.bekk.grafanametrics.services.TrafficGenerator
+import no.bekk.grafanametrics.services.TrafficLevel
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody

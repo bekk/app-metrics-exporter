@@ -1,4 +1,4 @@
-package no.bekk.grafanametrics.generators
+package no.bekk.grafanametrics.services
 
 import no.bekk.grafanametrics.shared.WorkloadPaths
 import org.slf4j.LoggerFactory
