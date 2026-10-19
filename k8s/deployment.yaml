@@ -34,12 +34,13 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          # Med 250m tok oppstarten over 150 s når Beyla lastet Java-agenten tidlig.
           resources:
             requests:
-              cpu: 250m
+              cpu: 350m
               memory: 512Mi
             limits:
-              cpu: 250m
+              cpu: 350m
               memory: 512Mi
           securityContext:
             allowPrivilegeEscalation: false
@@ -57,7 +58,7 @@ spec:
               path: /actuator/health/readiness
               port: http
             periodSeconds: 5
-            failureThreshold: 30
+            failureThreshold: 40
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
