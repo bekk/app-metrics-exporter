@@ -1,0 +1,9 @@
+### Slå av trafikken (0 requests per sekund)
+PUT {{host}}/api/traffic
+Content-Type: application/json
+
+{"level": "LOW"}
+
+###
+GET {{host}}/api/traffic
+Content-Type: application/json
