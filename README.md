@@ -15,6 +15,15 @@ cd app && mvn spring-boot:run
 Appens egne Spring-metrikker ligger på <http://localhost:8080/actuator/prometheus>.
 De sendes ikke til Grafana Cloud.
 
+## Koble til appen i klyngen
+
+Med `port-forward` nås appen i GKE på `localhost:8080`, og `curl`-kommandoene under
+virker mot den:
+
+```bash
+kubectl -n ns-app-metrics-exporter port-forward deploy/deployment-app-metrics-exporter 8080:8080
+```
+
 ## Simulerte endepunkter
 
 Hvert endepunkt har fast typisk latency og feilrate:
