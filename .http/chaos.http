@@ -1,0 +1,11 @@
+### Start en simulert hendelse (alle felt er valgfrie)
+POST {{host}}/api/chaos
+Content-Type: application/json
+
+{"errorRate": 0.3, "extraLatencyMs": 500, "minutes": 15}
+
+### Vis hendelsen som pågår (204 hvis ingen)
+GET {{host}}/api/chaos
+
+### Stopp hendelsen
+DELETE {{host}}/api/chaos
